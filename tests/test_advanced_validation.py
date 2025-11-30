@@ -75,6 +75,26 @@ def test_advanced_validation():
     assert result.is_valid == False
     assert "Facility Constraint" in result.violations[0]
 
+    # 5. Test Join Validation
+    print("Testing Join Validation...")
+    result = validator.validate_operation("calculate_dispatch_weighted_price", {
+        "join_keys": ["timestamp"] # Missing market_service
+    })
+    assert result.is_valid == False
+    assert "Missing Join Key" in result.violations[0]
+    assert "market_service" in result.violations[0]
+
+    result = validator.validate_operation("calculate_dispatch_weighted_price", {
+        "join_keys": ["timestamp", "market_service"]
+    })
+    # Note: This might still fail if other required inputs are checked, but we are testing join logic here.
+    # Based on current implementation, it should pass the join check.
+    # If it fails on other things, we check specifically that "Missing Join Key" is NOT in violations.
+    if not result.is_valid:
+        assert "Missing Join Key" not in str(result.violations)
+    else:
+        assert result.is_valid == True
+
 if __name__ == "__main__":
     test_advanced_validation()
     print("All advanced validation tests passed!")

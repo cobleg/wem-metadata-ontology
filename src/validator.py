@@ -30,6 +30,15 @@ class Validator:
                 # Logic to check if required filters are present in params
                 pass
 
+            # Check Join Conditions
+            if op_def.join_conditions:
+                provided_joins = params.get('join_keys', [])
+                for condition in op_def.join_conditions:
+                    field = condition['field']
+                    if field not in provided_joins:
+                        violations.append(f"Missing Join Key: Operation requires joining on '{field}'")
+                        alternatives.append(f"Add '{field}' to join_keys")
+
         # 2. Interval Validation
         if 'source_interval' in params and 'target_interval' in params:
             source = params['source_interval']
