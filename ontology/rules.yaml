@@ -1,0 +1,26 @@
+# Validation Rules
+
+rules:
+  - id: TEMP-001
+    category: temporal
+    severity: error
+    condition: "interval_mismatch"
+    message: "Cannot mix different interval types without conversion"
+
+  - id: STOR-001
+    category: calculation
+    severity: error
+    condition: "storage_flow_mixed"
+    message: "Storage facilities require separate flows for accurate pricing"
+
+  - id: AGG-001
+    category: aggregation
+    severity: error
+    condition: "service_aggregation_implicit"
+    message: "Cannot aggregate across market services without explicit flag"
+
+  - id: DATA-001
+    category: data_dependency
+    severity: error
+    condition: "missing_dependency"
+    message: "Required data table not available"

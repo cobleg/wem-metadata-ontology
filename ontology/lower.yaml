@@ -1,0 +1,222 @@
+# Lower Ontology: WEM-Specific Concepts
+
+market_services:
+  Energy:
+    dispatch_interval: DispatchInterval
+    pricing_interval: DispatchInterval
+    settlement_interval: TradingInterval
+    category: "Energy"
+    wem_rule_reference: "Clause 3.9"
+
+  # Frequency Co-optimised Essential System Services (FCESS)
+  RegulationRaise:
+    dispatch_interval: DispatchInterval
+    pricing_interval: DispatchInterval
+    category: "FCESS"
+    wem_rule_reference: "Clause 3.9.2"
+  
+  RegulationLower:
+    dispatch_interval: DispatchInterval
+    pricing_interval: DispatchInterval
+    category: "FCESS"
+    wem_rule_reference: "Clause 3.9.2"
+
+  ContingencyRaise:
+    dispatch_interval: DispatchInterval
+    pricing_interval: DispatchInterval
+    category: "FCESS"
+  
+  ContingencyLower:
+    dispatch_interval: DispatchInterval
+    pricing_interval: DispatchInterval
+    category: "FCESS"
+
+  RoCoF:
+    dispatch_interval: DispatchInterval
+    pricing_interval: DispatchInterval
+    category: "FCESS"
+    wem_rule_reference: "Clause 3.9.7"
+
+    wem_rule_reference: "Clause 3.9.7"
+
+facility_classes:
+  Scheduled:
+    name: "Scheduled Facility"
+    description: "Can respond to Dispatch Targets within Tolerance Range."
+    wem_rule_reference: "Clause 2.29.1A(b)"
+  SemiScheduled:
+    name: "Semi-Scheduled Facility"
+    description: "Intermittent generator that must comply with dispatch instructions."
+    wem_rule_reference: "Clause 2.29.1A(c)"
+  NonScheduled:
+    name: "Non-Scheduled Facility"
+    description: "Facility that is not Scheduled or Semi-Scheduled."
+    wem_rule_reference: "Clause 2.29.1A(d)"
+  DSP:
+    name: "Demand Side Programme"
+    description: "Aggregated loads that can be curtailed."
+    wem_rule_reference: "Clause 2.29.1A(f)"
+
+technology_types:
+  NIGS:
+    name: "Non-Intermittent Generating System"
+    description: "Conventional generation (e.g., gas, coal)."
+    wem_rule_reference: "Clause 2.29.1(c)"
+  IGS:
+    name: "Intermittent Generating System"
+    description: "Variable generation (e.g., wind, solar)."
+    wem_rule_reference: "Clause 2.29.1(d)"
+  ESR:
+    name: "Electric Storage Resource"
+    description: "System capable of storing and discharging energy."
+    wem_rule_reference: "Clause 2.29.1(d1)"
+  Load:
+    name: "Load"
+    description: "Electricity consuming resources."
+    wem_rule_reference: "Clause 2.29.1(d2)"
+
+facility_types:
+  Storage:
+    flows: [charge, discharge]
+    separate_flows_default: true
+    default_class: Scheduled
+    default_technology: ESR
+    wikidata_mapping:
+      instance_of: "P31" # battery energy storage system (Q810924)
+      part_of: "P361" # South West Interconnected System (Q85802336)
+      owner: "P127"
+      nominal_power_capacity: "P2109" # MW
+      energy_storage_capacity: "P4140" # MWh
+      service_entry: "P729"
+      location: "P625" # geographic coordinates
+      operator: "P137"
+      facility_code: "P4876"
+  Generator:
+    flows: [generation]
+    default_class: Scheduled
+    default_technology: NIGS
+    wikidata_mapping:
+      instance_of: "P31" # power station (Q159719)
+      part_of: "P361" # South West Interconnected System (Q85802336)
+      nominal_power_capacity: "P2109"
+      energy_source: "P618"
+      operator: "P137"
+      facility_code: "P4876"
+      location: "P625"
+  Hybrid:
+    flows: [charge, discharge, generation]
+    requires: separate_storage_flows=true
+
+energy_sources:
+  Solar:
+    name: "Solar"
+    wikidata_id: "Q40015"
+    color_hex: "fcac0a"
+  Wind:
+    name: "Wind"
+    wikidata_id: "Q52664317"
+    color_hex: "17bf49"
+  Battery:
+    name: "Battery Storage"
+    wikidata_id: "Q810924"
+    color_hex: "174fbf"
+  Gas:
+    name: "Natural Gas"
+    wikidata_id: "Q40858"
+    color_hex: "b717bf"
+  Coal:
+    name: "Coal"
+    wikidata_id: "Q24489"
+    color_hex: "8B4513"
+  Biogas:
+    name: "Biogas"
+    wikidata_id: "Q171076"
+    color_hex: "bf1765"
+  Diesel:
+    name: "Diesel"
+    wikidata_id: "Q38423"
+    color_hex: "fc220a"
+
+quantity_types:
+  # Financial
+  EnergyOfferPriceCeiling:
+    name: "Energy Offer Price Ceiling"
+    unit: "AUD/MWh"
+    description: "Maximum price for energy offers."
+    category: "Financial"
+  MarketClearingPrice:
+    name: "Market Clearing Price (MCP)"
+    unit: "AUD/MWh"
+    description: "Marginal price for a Market Service."
+    category: "Financial"
+  
+  # Capacity
+  CapacityCredit:
+    name: "Capacity Credit"
+    unit: "MW"
+    description: "Notional unit of Reserve Capacity."
+    category: "Capacity"
+  ReserveCapacityRequirement:
+    name: "Reserve Capacity Requirement (RCR)"
+    unit: "MW"
+    description: "Total capacity required in the SWIS."
+    category: "Capacity"
+
+  # Energy/Dispatch
+  Injection:
+    name: "Injection"
+    unit: "MWh"
+    description: "Energy sent into the network."
+    category: "Energy"
+  DispatchTarget:
+    name: "Dispatch Target"
+    unit: "MW"
+    description: "Target MW output issued by AEMO."
+    category: "Energy"
+  
+  # ESS
+  RoCoFControlRequirement:
+    name: "RoCoF Control Requirement"
+    unit: "MWs/h"
+    description: "Total quantity of RoCoF Control Service required."
+    category: "ESS"
+  ContingencyRaiseOffset:
+    name: "Contingency Raise Offset"
+    unit: "MW"
+    description: "Parameter for setting Contingency Reserve requirement."
+    category: "ESS"
+
+price_types:
+  DispatchPrice:
+    granularity: DispatchInterval
+    scope: market_service
+  TradingPrice:
+    granularity: TradingInterval
+    scope: region
+  DispatchWeightedPrice:
+    granularity: DispatchInterval
+    scope: market_service
+    derived_from: [DispatchPrice, DispatchQuantity]
+
+domain_instances:
+  - name: "Western Australia (WA)"
+    type: "Location"
+    description: "The state of Western Australia. Abbreviation 'WA' refers to this state, NOT Washington State (USA)."
+    uri: "http://www.wikidata.org/entity/Q3206"
+
+  - name: "Wholesale Electricity Market (WEM)"
+    type: "Market"
+    description: "The wholesale electricity market operating in the South West Interconnected System of Western Australia."
+    uri: "https://www.aemo.com.au/energy-systems/electricity/wholesale-electricity-market-wem"
+    location: "Western Australia (WA)"
+
+  - name: "South West Interconnected System (SWIS)"
+    type: "Grid"
+    description: "The main electricity network in Western Australia, covering Perth and the south-west region."
+    location: "Western Australia (WA)"
+  
+  - name: "WEM Rules"
+    type: "Regulation"
+    description: "The Wholesale Electricity Market Rules governing the market operation."
+    uri: "https://www.wa.gov.au/government/document-collections/wholesale-electricity-market-rules"
+    location: "Western Australia (WA)"

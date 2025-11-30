@@ -1,0 +1,37 @@
+# Data Catalog: Ontology to Physical Schema Map
+
+tables:
+  dispatch_prices:
+    concept: DispatchPrice
+    columns:
+      timestamp: timestamp
+      market_service: market_service
+      price: price
+    constraints:
+      - unique: [timestamp, market_service]
+
+  dispatch_quantities:
+    concept: DispatchQuantity
+    columns:
+      timestamp: timestamp
+      facility: facility
+      market_service: market_service
+      quantity: quantity
+    constraints:
+      - unique: [timestamp, facility, market_service]
+
+  generator_scada:
+    concept: SCADA
+    columns:
+      timestamp: timestamp
+      facility: facility
+      metric: metric
+      value: value
+    constraints:
+      - unique: [timestamp, facility, metric]
+
+  date_validation:
+    concept: DateValidation
+    columns:
+      timestamp_value: timestamp
+      is_business_day: is_business_day

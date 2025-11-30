@@ -1,0 +1,109 @@
+# Upper Ontology: Domain-Independent Concepts
+
+temporal:
+  interval_types:
+    DispatchInterval:
+      duration_minutes: 5
+      alignment: "00:00"
+    TradingInterval:
+      duration_minutes: 30
+      alignment: "00:00"
+    SCADAInterval:
+      duration_seconds: 4
+    SettlementPeriod:
+      duration_unit: "month"
+
+  conversion_rules:
+    - source: DispatchInterval
+      target: TradingInterval
+      cardinality: many_to_one
+      factor: 6
+      aggregation: sum
+      edge_cases:
+        partial: error
+        missing: error
+
+units:
+  Power: MW
+  Energy: MWh
+  Price: AUD/MWh
+  Duration: minutes
+
+aggregation:
+  compatibility:
+    price:
+      - time_weighted_average
+      - dispatch_weighted_average
+    quantity:
+      - sum
+      - average
+
+relationships:
+  is_a:
+    name: "Is A"
+    inverse: "has_subtype"
+    description: "Indicates that the subject is a subtype of the object (Class-to-Class)."
+    category: "Taxonomy"
+  instance_of:
+    name: "Instance Of"
+    inverse: "has_instance"
+    description: "Indicates that the subject is an instance of the object Class."
+    category: "Taxonomy"
+  part_of:
+    name: "Part Of"
+    inverse: "has_part"
+    description: "Indicates that the subject is a component of the object."
+    category: "Composition"
+  governed_by:
+    name: "Governed By"
+    inverse: "governs"
+    description: "Indicates the regulatory framework controlling the subject."
+    category: "Governance"
+  related_to:
+    name: "Related To"
+    description: "Generic semantic association."
+    category: "Association"
+
+semantic_context:
+  description: "Mappings to public ontologies for domain context."
+  references:
+    - name: "IEC 61970/61968 Common Information Model (CIM)"
+      uri: "https://cimug.ucaiug.org/"
+      relevance:
+        - "Generators (Generation Package)"
+        - "Powerlines/Wires (Wires Package)"
+        - "Load Centres (LoadModel)"
+        - "Substations and Topology"
+    
+    - name: "Open Energy Ontology (OEO)"
+      uri: "https://openenergy-platform.org/ontology/"
+      relevance:
+        - "Energy System Modeling"
+        - "Physical Energy Assets"
+    
+    - name: "GeoSPARQL"
+      uri: "http://www.opengis.net/ont/geosparql"
+      relevance:
+        - "Spatial Information"
+        - "Geographic Coordinates of Facilities"
+
+    - name: "WEM Rules and Procedures"
+      uri: "https://www.wa.gov.au/government/document-collections/wholesale-electricity-market-rules"
+      relevance:
+        - "Foundational Ontology"
+        - "Market Service Definitions (Clauses 3.9.2, 3.9.7)"
+        - "Legal and Operational Constraints"
+
+    - name: "Market Surveillance Data Catalogue (MSDC)"
+      uri: "https://aemo.com.au/energy-systems/electricity/wholesale-electricity-market-wem/data-wem/market-data-catalogue"
+      relevance:
+        - "Data Ontology"
+        - "Data Dictionary and Taxonomy"
+        - "Cross-reference to WEM Rules"
+
+    - name: "WEM Metering, Settlement and Prudential Calculation Formulation"
+      uri: "https://aemo.com.au/energy-systems/electricity/wholesale-electricity-market-wem/procedures-policies-and-guides/procedures"
+      relevance:
+        - "Mathematical Representation"
+        - "Logical Hierarchy (Participant -> Facility -> Component)"
+        - "Settlement Calculations"
