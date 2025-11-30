@@ -51,6 +51,15 @@ def get_concept_definition(concept_name: str) -> str:
     Returns the full definition of a concept, including WEM Rules, Wikidata links, and properties.
     Search order: Market Services, Facility Types, Facility Classes, Technology Types, Quantities.
     """
+    # Helper to search by alias
+    def find_by_alias(dictionaries):
+        for d in dictionaries:
+            for name, item in d.items():
+                if hasattr(item, 'aliases') and item.aliases and concept_name in item.aliases:
+                    return str(item.dict())
+        return None
+
+    # 1. Direct Lookup
     # Check Market Services
     if concept_name in ontology.market_services:
         return str(ontology.market_services[concept_name].dict())
@@ -71,7 +80,23 @@ def get_concept_definition(concept_name: str) -> str:
     if concept_name in ontology.quantity_types:
         return str(ontology.quantity_types[concept_name].dict())
 
-    return f"Concept '{concept_name}' not found in ontology."
+    # 2. Table Name Lookup
+    if concept_name in ontology.tables:
+        mapped_concept = ontology.tables[concept_name].concept
+        return get_concept_definition(mapped_concept)
+
+    # 3. Alias Lookup
+    alias_result = find_by_alias([
+        ontology.market_services,
+        ontology.facility_types,
+        ontology.facility_classes,
+        ontology.technology_types,
+        ontology.quantity_types
+    ])
+    if alias_result:
+        return alias_result
+
+    return f"Concept '{concept_name}' not found in ontology (checked names, tables, and aliases)."
 
 @mcp.tool()
 def list_concepts() -> str:
@@ -96,11 +121,23 @@ def get_guidelines() -> str:
     Guiding Notes for AI:
     1. **Validate First**: Always call `validate_operation` before constructing complex queries.
     2. **Check Data Catalog**: Use `get_table_mapping` to find physical tables (e.g., DispatchPrice -> dispatch_prices).
-    3. **Handle Intervals**: Use `get_conversion_rule` for interval mismatches (e.g., 5-min vs 30-min).
-    4. **Consult WEM Rules**: Use `get_concept_definition` to find the governing WEM Rule (e.g., "Clause 3.9") for a concept.
-    5. **Use Facility Classes**: Distinguish between Scheduled, Non-Scheduled, etc., using `get_concept_definition`.
-    6. **Leverage Wikidata**: Use `wikidata_mapping` in definitions to link to external knowledge graphs.
+    3. **Advanced Validation**:
+        - **Intervals**: Do not mix 5-min (Dispatch) and 30-min (Trading) data without conversion.
+        - **Units**: Ensure `MW` (Power) and `MWh` (Energy) are used correctly.
+        - **Services**: Do not aggregate Energy with FCESS.
+        - **Storage**: Separate charge/discharge flows for price calculations.
+    4. **Lookup Flexibility**: You can look up concepts by **Concept Name**, **Table Name** (e.g., `sent_out_data`), or **Alias**.
+    5. **Use Tools**:
+        - `get_concept_definition(name)`: Get full definition and rules.
+        - `get_operation_definition(name)`: Get standard calculation patterns.
+        - `validate_operation(op, params)`: Pre-validate your logic.
     """
+    """
+    Returns the definition of a standard operation, including required inputs and validation rules.
+    """
+    if operation_name in ontology.operations:
+        return str(ontology.operations[operation_name].dict())
+    return f"Operation '{operation_name}' not found. Available operations: {list(ontology.operations.keys())}"
 
 if __name__ == "__main__":
     mcp.run()

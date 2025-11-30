@@ -14,6 +14,7 @@ class ConversionRule(BaseModel):
     factor: Optional[float] = None
     aggregation: str
     edge_cases: Dict[str, str]
+    validation: Optional[str] = None
 
 class MarketService(BaseModel):
     dispatch_interval: str
@@ -21,6 +22,8 @@ class MarketService(BaseModel):
     settlement_interval: Optional[str] = None
     category: Optional[str] = None
     wem_rule_reference: Optional[str] = None
+    compatible_with: Optional[List[str]] = None
+    aggregation_rules: Optional[Dict[str, Any]] = None
 
 class FacilityClass(BaseModel):
     name: str
@@ -39,6 +42,8 @@ class FacilityType(BaseModel):
     wikidata_mapping: Optional[Dict[str, str]] = None
     default_class: Optional[str] = None
     default_technology: Optional[str] = None
+    quantity_interpretation: Optional[Dict[str, str]] = None
+    calculation_requirements: Optional[Dict[str, str]] = None
 
 class QuantityType(BaseModel):
     name: str
@@ -46,6 +51,7 @@ class QuantityType(BaseModel):
     description: str
     category: str
     source: Optional[str] = None
+    aliases: Optional[List[str]] = None
 
 class RelationshipType(BaseModel):
     name: str
@@ -82,6 +88,26 @@ class EnergySource(BaseModel):
     wikidata_id: str
     color_hex: str
 
+# New Validation Models
+class UnitValidation(BaseModel):
+    inputs: Dict[str, Dict[str, str]]
+    output: Dict[str, Any]
+    validation: Optional[str] = None
+    formula: Optional[str] = None
+
+class OperationDefinition(BaseModel):
+    required_inputs: List[str]
+    join_conditions: Optional[List[Dict[str, str]]] = None
+    filters: Optional[List[str]] = None
+    aggregation: Optional[Dict[str, Any]] = None
+    special_cases: Optional[Dict[str, Any]] = None
+    validation: Optional[List[str]] = None
+
+class DataQualityRule(BaseModel):
+    minimum_completeness: Optional[float] = None
+    handling_missing_data: Optional[str] = None
+    flags_to_check: Optional[List[str]] = None
+
 class Ontology(BaseModel):
     interval_types: Dict[str, IntervalType]
     conversion_rules: List[ConversionRule]
@@ -96,3 +122,8 @@ class Ontology(BaseModel):
     rules: List[ValidationRule]
     domain_instances: List[DomainInstance] = []
     energy_sources: Dict[str, EnergySource] = {}
+    
+    # New sections
+    unit_validation: Dict[str, UnitValidation] = {}
+    operations: Dict[str, OperationDefinition] = {}
+    data_quality_rules: Dict[str, DataQualityRule] = {}

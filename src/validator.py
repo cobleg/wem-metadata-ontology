@@ -15,20 +15,77 @@ class Validator:
         violations = []
         alternatives = []
 
-        # Example validation logic based on rules
-        # In a real implementation, this would be more dynamic
-        
-        # Rule: AGG-001 - Service Aggregation
-        if 'market_service' in params and isinstance(params['market_service'], list) and len(params['market_service']) > 1:
-            if not params.get('aggregate_services', False):
-                violations.append("AGG-001: Cannot aggregate across market services without explicit flag")
-                alternatives.append("Set aggregate_services=true")
-                alternatives.append("Run separate calculations per service")
+        # 1. Validate against Operation Definition
+        if operation in self.ontology.operations:
+            op_def = self.ontology.operations[operation]
+            
+            # Check required inputs
+            for req_input in op_def.required_inputs:
+                # Simplistic check: assumes params keys match input names or are present in 'inputs' dict
+                # In reality, this would need to parse the input structure
+                pass 
 
-        # Rule: STOR-001 - Storage Flow Separation
-        if params.get('facility_type') == 'Storage' and not params.get('separate_storage_flows', False):
-             violations.append("STOR-001: Storage facilities require separate flows for accurate pricing")
-             alternatives.append("Set separate_storage_flows=true")
+            # Check filters
+            if op_def.filters:
+                # Logic to check if required filters are present in params
+                pass
+
+        # 2. Interval Validation
+        if 'source_interval' in params and 'target_interval' in params:
+            source = params['source_interval']
+            target = params['target_interval']
+            if source != target:
+                # Check if conversion rule exists
+                rule = next((r for r in self.ontology.conversion_rules if r.source == source and r.target == target), None)
+                if not rule:
+                    violations.append(f"Interval Mismatch: No conversion rule from {source} to {target}")
+                    alternatives.append("Use get_conversion_rule() to find valid path")
+                elif rule.validation:
+                    # Check if specific validation requirement is met (e.g., alignment)
+                    # This is a placeholder for actual logic
+                    pass
+
+        # 3. Unit Validation
+        if 'units' in params:
+            # params['units'] = {'quantity': 'MW', 'price': 'AUD/MWh'}
+            for rule_name, rule in self.ontology.unit_validation.items():
+                # Check if this rule applies (e.g., based on operation name or inputs)
+                if operation == rule_name or rule_name in params.get('rules', []):
+                    # Validate inputs
+                    for input_name, input_def in rule.inputs.items():
+                        if input_name in params['units']:
+                            provided_unit = params['units'][input_name]
+                            if provided_unit != input_def['unit']:
+                                violations.append(f"Unit Mismatch: Expected {input_def['unit']} for {input_name}, got {provided_unit}")
+                                alternatives.append(f"Convert {input_name} to {input_def['unit']}")
+
+        # 4. Market Service Compatibility
+        if 'market_services' in params and isinstance(params['market_services'], list):
+            services = params['market_services']
+            if len(services) > 1:
+                base_service = services[0]
+                if base_service in self.ontology.market_services:
+                    base_def = self.ontology.market_services[base_service]
+                    for other_service in services[1:]:
+                        if base_def.compatible_with is not None and other_service not in base_def.compatible_with:
+                            violations.append(f"Incompatible Services: {base_service} cannot be aggregated with {other_service}")
+                            alternatives.append("Calculate separately")
+
+        # 5. Facility Type Constraints
+        if 'facility_type' in params:
+            ftype = params['facility_type']
+            if ftype in self.ontology.facility_types:
+                ft_def = self.ontology.facility_types[ftype]
+                
+                # Check calculation requirements
+                if ft_def.calculation_requirements:
+                    if operation in ft_def.calculation_requirements:
+                        req = ft_def.calculation_requirements[operation]
+                        if req == "must_separate_charge_discharge" and not params.get('separate_flows', False):
+                            violations.append(f"Facility Constraint: {ftype} requires separate flows for {operation}")
+                            alternatives.append("Set separate_flows=true")
+                        if req == "not_applicable":
+                            violations.append(f"Invalid Operation: {operation} is not applicable for {ftype}")
 
         if violations:
             return ValidationResult(False, violations, alternatives)

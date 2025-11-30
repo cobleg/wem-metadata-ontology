@@ -7,6 +7,10 @@ market_services:
     settlement_interval: TradingInterval
     category: "Energy"
     wem_rule_reference: "Clause 3.9"
+    compatible_with: []
+    aggregation_rules:
+      settlement_interval: TradingInterval
+      aggregation_allowed: true
 
   # Frequency Co-optimised Essential System Services (FCESS)
   RegulationRaise:
@@ -14,28 +18,48 @@ market_services:
     pricing_interval: DispatchInterval
     category: "FCESS"
     wem_rule_reference: "Clause 3.9.2"
+    compatible_with: [RegulationLower, ContingencyRaise, ContingencyLower, RoCoF]
+    aggregation_rules:
+      within_category: allowed
+      with_energy: forbidden
   
   RegulationLower:
     dispatch_interval: DispatchInterval
     pricing_interval: DispatchInterval
     category: "FCESS"
     wem_rule_reference: "Clause 3.9.2"
+    compatible_with: [RegulationRaise, ContingencyRaise, ContingencyLower, RoCoF]
+    aggregation_rules:
+      within_category: allowed
+      with_energy: forbidden
 
   ContingencyRaise:
     dispatch_interval: DispatchInterval
     pricing_interval: DispatchInterval
     category: "FCESS"
+    compatible_with: [RegulationRaise, RegulationLower, ContingencyLower, RoCoF]
+    aggregation_rules:
+      within_category: allowed
+      with_energy: forbidden
   
   ContingencyLower:
     dispatch_interval: DispatchInterval
     pricing_interval: DispatchInterval
     category: "FCESS"
+    compatible_with: [RegulationRaise, RegulationLower, ContingencyRaise, RoCoF]
+    aggregation_rules:
+      within_category: allowed
+      with_energy: forbidden
 
   RoCoF:
     dispatch_interval: DispatchInterval
     pricing_interval: DispatchInterval
     category: "FCESS"
     wem_rule_reference: "Clause 3.9.7"
+    compatible_with: [RegulationRaise, RegulationLower, ContingencyRaise, ContingencyLower]
+    aggregation_rules:
+      within_category: allowed
+      with_energy: forbidden
 
     wem_rule_reference: "Clause 3.9.7"
 
@@ -81,6 +105,12 @@ facility_types:
     separate_flows_default: true
     default_class: Scheduled
     default_technology: ESR
+    quantity_interpretation:
+      positive: "discharge (generation)"
+      negative: "charge (consumption)"
+    calculation_requirements:
+      dispatch_weighted_price: "must_separate_charge_discharge"
+      capacity_factor: "not_applicable"
     wikidata_mapping:
       instance_of: "P31" # battery energy storage system (Q810924)
       part_of: "P361" # South West Interconnected System (Q85802336)
@@ -95,6 +125,8 @@ facility_types:
     flows: [generation]
     default_class: Scheduled
     default_technology: NIGS
+    quantity_interpretation:
+      positive: "generation"
     wikidata_mapping:
       instance_of: "P31" # power station (Q159719)
       part_of: "P361" # South West Interconnected System (Q85802336)
@@ -106,6 +138,9 @@ facility_types:
   Hybrid:
     flows: [charge, discharge, generation]
     requires: separate_storage_flows=true
+    quantity_interpretation:
+      positive: "net_export"
+      negative: "net_import"
 
 energy_sources:
   Solar:
@@ -185,6 +220,22 @@ quantity_types:
     unit: "MW"
     description: "Parameter for setting Contingency Reserve requirement."
     category: "ESS"
+
+  # Forecasts
+  DPVForecast:
+    name: "Distributed PV Forecast"
+    unit: "MW"
+    description: "Forecasted output from distributed photovoltaic systems."
+    category: "Forecast"
+    aliases: ["DPV", "Rooftop Solar Forecast"]
+
+  # Generation
+  SentOutGeneration:
+    name: "Sent Out Generation"
+    unit: "MWh"
+    description: "Electricity sent out to the grid from a facility."
+    category: "Generation"
+    aliases: ["SentOutData", "SentOut"]
 
 price_types:
   DispatchPrice:

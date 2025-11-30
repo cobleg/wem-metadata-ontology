@@ -22,12 +22,65 @@ temporal:
       edge_cases:
         partial: error
         missing: error
+      validation: "must_align_on_trading_boundaries"
 
 units:
   Power: MW
   Energy: MWh
   Price: AUD/MWh
   Duration: minutes
+
+unit_validation:
+  dispatch_weighted_price:
+    inputs:
+      quantity: {unit: "MW", type: "power"}
+      price: {unit: "AUD/MWh", type: "price_per_energy"}
+    output: {unit: "AUD/MWh", type: "price_per_energy"}
+    validation: "weighted_average_preserves_price_units"
+  
+  capacity_factor:
+    inputs:
+      generation: {unit: "MWh", type: "energy"}
+      capacity: {unit: "MW", type: "power"}
+      hours: {unit: "h", type: "time"}
+    formula: "generation / (capacity * hours)"
+    output: {unit: "dimensionless", type: "ratio"}
+
+operations:
+  calculate_dispatch_weighted_price:
+    required_inputs:
+      - dispatch_quantities.quantity
+      - dispatch_prices.price
+    join_conditions:
+      - field: timestamp
+        match_type: exact
+      - field: market_service
+        match_type: exact
+    filters:
+      - "quantity > 0"
+    aggregation:
+      formula: "SUM(price * quantity) / SUM(quantity)"
+      group_by: [time_period, facility, market_service]
+    special_cases:
+      storage_facilities:
+        rule: "separate_charge_discharge_flows"
+        charge_indicator: "quantity < 0"
+
+  calculate_capacity_factor:
+    required_inputs:
+      - generator_scada.value
+      - wikidata.nameplate_capacity
+    validation:
+      - "nameplate_capacity > 0"
+    aggregation:
+      formula: "total_generation_mwh / (nameplate_capacity_mw * hours)"
+
+data_quality_rules:
+  dispatch_weighted_price:
+    minimum_completeness: 0.95
+    handling_missing_data: "exclude_intervals"
+    flags_to_check:
+      - essPreProcessingConditionFlag
 
 aggregation:
   compatibility:

@@ -31,7 +31,10 @@ class OntologyLoader:
             'tables': catalog['tables'],
             'rules': rules['rules'],
             'domain_instances': lower.get('domain_instances', []),
-            'energy_sources': lower.get('energy_sources', {})
+            'energy_sources': lower.get('energy_sources', {}),
+            'unit_validation': upper.get('unit_validation', {}),
+            'operations': upper.get('operations', {}),
+            'data_quality_rules': upper.get('data_quality_rules', {})
         }
         
         return Ontology(**data)

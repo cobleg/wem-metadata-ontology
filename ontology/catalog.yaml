@@ -35,3 +35,22 @@ tables:
     columns:
       timestamp_value: timestamp
       is_business_day: is_business_day
+
+  dpv_forecast:
+    concept: DPVForecast
+    columns:
+      timestamp: timestamp
+      value: value
+      trading_date: trading_date
+    constraints:
+      - unique: [timestamp]
+
+  sent_out_data:
+    concept: SentOutGeneration
+    columns:
+      timestamp: Timestamp
+      trading_date: "Trading Date"
+      trading_interval: "Trading Interval"
+      quantity: "Total Sent Out Generation (MWh)"
+    constraints:
+      - unique: ["Trading Date", "Trading Interval"]
