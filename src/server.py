@@ -64,6 +64,10 @@ def get_concept_definition(concept_name: str) -> str:
     if concept_name in ontology.market_services:
         return str(ontology.market_services[concept_name].dict())
     
+    # Check Markets
+    if concept_name in ontology.markets:
+        return str(ontology.markets[concept_name].dict())
+    
     # Check Facility Types
     if concept_name in ontology.facility_types:
         return str(ontology.facility_types[concept_name].dict())
@@ -105,6 +109,7 @@ def list_concepts() -> str:
     Use this to discover valid concept names for get_concept_definition.
     """
     return f"""
+    Markets: {list(ontology.markets.keys())}
     Market Services: {list(ontology.market_services.keys())}
     Facility Classes: {list(ontology.facility_classes.keys())}
     Facility Types: {list(ontology.facility_types.keys())}
