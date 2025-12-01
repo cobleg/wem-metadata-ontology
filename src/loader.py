@@ -22,12 +22,18 @@ class OntologyLoader:
             'interval_types': upper['temporal']['interval_types'],
             'conversion_rules': upper['temporal']['conversion_rules'],
             'relationships': upper.get('relationships', {}),
+            'markets': lower.get('markets', {}),
             'market_services': lower['market_services'],
             'facility_classes': lower.get('facility_classes', {}),
             'technology_types': lower.get('technology_types', {}),
             'facility_types': lower['facility_types'],
             'price_types': lower['price_types'],
-            'quantity_types': lower.get('quantity_types', {}),
+            'quantity_types': {**lower.get('quantity_types', {}), **{
+                k: v for k, v in upper.items() 
+                if k in ['NameplateCapacity', 'EnergyCapacity', 'DurationRating', 
+                        'CapacityFactor', 'AvailabilityFactor', 'RoundTripEfficiency', 
+                        'EquivalentFullCycles', 'SCADA']
+            }},
             'tables': catalog['tables'],
             'rules': rules['rules'],
             'domain_instances': lower.get('domain_instances', []),

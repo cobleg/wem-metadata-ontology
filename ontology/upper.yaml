@@ -74,6 +74,33 @@ operations:
       - "nameplate_capacity > 0"
     aggregation:
       formula: "total_generation_mwh / (nameplate_capacity_mw * hours)"
+    parameters:
+      - name: facility_code
+        required: true
+      - name: start_time
+        required: true
+      - name: end_time
+        required: true
+      - name: cf_type
+        required_for: [Storage, Hybrid]
+      - name: adjust_for_outages
+        default: false
+    validation_logic:
+      - condition: "facility_type == 'Storage' and cf_type not in ['discharge', 'charge', 'both']"
+        error: "Must specify CF type for storage facilities"
+      - condition: "facility_type == 'Hybrid' and component not in ['generation', 'storage']"
+        error: "Must specify component for hybrid facilities"
+      - check: "NameplateCapacity exists in metadata"
+      - check: "SCADA coverage >= 80% of period"
+    returns:
+      - name: capacity_factor
+        type: float
+      - name: calculation_method
+        type: string
+      - name: data_completeness
+        type: float
+      - name: warnings
+        type: list
 
 data_quality_rules:
   dispatch_weighted_price:
@@ -153,6 +180,7 @@ semantic_context:
         - "Data Ontology"
         - "Data Dictionary and Taxonomy"
         - "Cross-reference to WEM Rules"
+      aliases: ["SentOutData", "SentOut"]
 
     - name: "WEM Metering, Settlement and Prudential Calculation Formulation"
       uri: "https://aemo.com.au/energy-systems/electricity/wholesale-electricity-market-wem/procedures-policies-and-guides/procedures"
@@ -160,3 +188,84 @@ semantic_context:
         - "Mathematical Representation"
         - "Logical Hierarchy (Participant -> Facility -> Component)"
         - "Settlement Calculations"
+
+# Physical Capacity
+NameplateCapacity:
+  name: "Nameplate Capacity"
+  definition: "Registered maximum continuous power output (MW)"
+  applies_to: [Generator, Storage, Hybrid]
+  data_source: "Wikidata, facility registration"
+  unit: "MW"
+  category: "PhysicalCapacity"
+
+EnergyCapacity:
+  name: "Energy Capacity"
+  definition: "Total energy storage capacity (MWh)"
+  applies_to: [Storage, Hybrid(storage_component)]
+  required_for: [EquivalentFullCycles, DurationRating]
+  unit: "MWh"
+  category: "PhysicalCapacity"
+
+DurationRating:
+  name: "Duration Rating"
+  definition: "Storage duration at nameplate power (hours)"
+  formula: "EnergyCapacity / NameplateCapacity"
+  applies_to: [Storage]
+  unit: "hours"
+  category: "PhysicalCapacity"
+
+SCADA:
+  name: "SCADA Telemetry"
+  unit: "MW"
+  description: "Real-time telemetry from all registered facilities (Generators, Loads, Storage), not just generators."
+  category: "Physical"
+  aliases: ["generator_scada"]
+
+# Performance Metrics
+CapacityFactor:
+  name: "Capacity Factor"
+  abstract: true
+  category: "PerformanceMetric"
+  variants:
+    GeneratorCapacityFactor:
+      name: "Generator Capacity Factor"
+      formula: "ActualGeneration / (NameplateCapacity * Hours)"
+      applies_to: [Generator(thermal), Generator(renewable)]
+      requires: [SCADA]
+      valid_range: [0.0, 1.05]
+      interpretation: "Fraction of theoretical maximum achieved"
+    StorageDischargeCapacityFactor:
+      name: "Storage Discharge Capacity Factor"
+      formula: "ActualDischarge / (NameplateCapacity * Hours)"
+      applies_to: [Storage]
+      interpretation: "Storage utilization for grid injection"
+    StorageChargeCapacityFactor:
+      name: "Storage Charge Capacity Factor"
+      formula: "ActualCharge / (NameplateCapacity * Hours)"
+      applies_to: [Storage]
+      interpretation: "Storage utilization for grid withdrawal"
+
+AvailabilityFactor:
+  name: "Availability Factor"
+  formula: "(Hours - OutageHours) / Hours"
+  applies_to: [All]
+  requires: [generator_outages]
+  interpretation: "Fraction of time available for dispatch"
+  category: "PerformanceMetric"
+
+RoundTripEfficiency:
+  name: "Round Trip Efficiency"
+  formula: "ActualDischarge / ActualCharge"
+  applies_to: [Storage]
+  valid_range: [0.7, 0.95]
+  time_period: "must match charge/discharge periods"
+  interpretation: "Energy retention through charge-discharge cycle"
+  category: "PerformanceMetric"
+
+EquivalentFullCycles:
+  name: "Equivalent Full Cycles"
+  formula: "ActualDischarge / EnergyCapacity"
+  applies_to: [Storage]
+  requires: [EnergyCapacity]
+  interpretation: "Number of complete discharge cycles"
+  category: "PerformanceMetric"

@@ -1,5 +1,47 @@
 # Lower Ontology: WEM-Specific Concepts
 
+# Lower Ontology: WEM-Specific Concepts
+
+markets:
+  STEM:
+    name: "Short Term Energy Market"
+    abbreviation: "STEM"
+    description: "Day-ahead forward market for electricity trading."
+    function: "Allows participants to adjust bilateral energy positions day-ahead."
+    mechanism: "STEM Auction (Clause 6.9)"
+    participation: "Mandatory for Capacity Credit holders to cover RCOQ; open to others."
+    wem_rule_reference: "Chapter 6"
+    related_tables: [] # No specific STEM tables in current catalog, but conceptually linked
+
+  RTM:
+    name: "Real-Time Market"
+    abbreviation: "RTM"
+    description: "Mandatory gross pool market for real-time balancing."
+    function: "Balances supply and demand; determines dispatch and ESS enablement."
+    mechanism: "Security Constrained Economic Dispatch (SCED)"
+    participation: "Mandatory for all Registered Facilities."
+    wem_rule_reference: "Chapter 7"
+    procures: [Energy, RegulationRaise, RegulationLower, ContingencyRaise, ContingencyLower, RoCoF]
+    related_tables: [dispatch_prices, dispatch_quantities, generator_scada, sent_out_data]
+
+  RCM:
+    name: "Reserve Capacity Mechanism"
+    abbreviation: "RCM"
+    description: "Capacity mechanism to ensure system reliability."
+    function: "Signals investment need; ensures capacity availability."
+    mechanism: "Quantity-based capacity market; Reserve Capacity Price."
+    wem_rule_reference: "Chapter 4"
+    related_tables: [] # Capacity Credits table not yet in catalog
+
+  ESS:
+    name: "Essential System Services"
+    abbreviation: "ESS"
+    description: "Ancillary services required for system stability."
+    function: "Maintains frequency, voltage, and system security."
+    mechanism: "Procured via RTM (FCESS) or contracts (NCESS)."
+    wem_rule_reference: "Clause 3.9"
+    procures: [RegulationRaise, RegulationLower, ContingencyRaise, ContingencyLower, RoCoF]
+
 market_services:
   Energy:
     dispatch_interval: DispatchInterval
@@ -121,6 +163,12 @@ facility_types:
       location: "P625" # geographic coordinates
       operator: "P137"
       facility_code: "P4876"
+    capacity_factor_notes: |
+      Battery storage capacity factor fundamentally differs from generation CF:
+      - Bidirectional operation requires separate charge/discharge metrics
+      - High CF can indicate grid services (FCESS) rather than energy arbitrage
+      - Should analyze alongside dispatch-weighted prices for revenue implications
+      - Round-trip efficiency degrades over time (aging analysis)
   Generator:
     flows: [generation]
     default_class: Scheduled
@@ -135,6 +183,16 @@ facility_types:
       operator: "P137"
       facility_code: "P4876"
       location: "P625"
+    capacity_factor_notes: |
+      Thermal CF interpretation depends on role:
+      - Baseload: target CF ~85-95%
+      - Mid-merit: CF ~40-60%
+      - Peaking: CF <20%, high $/MWh focus
+      
+      Renewable CF is weather-dependent:
+      - Expected CF varies by season and technology
+      - Actual vs expected CF indicates performance issues
+      - Curtailment: physical CF > market CF
   Hybrid:
     flows: [charge, discharge, generation]
     requires: separate_storage_flows=true

@@ -25,6 +25,17 @@ class MarketService(BaseModel):
     compatible_with: Optional[List[str]] = None
     aggregation_rules: Optional[Dict[str, Any]] = None
 
+class Market(BaseModel):
+    name: str
+    abbreviation: str
+    description: str
+    function: str
+    mechanism: str
+    participation: Optional[str] = None
+    wem_rule_reference: Optional[str] = None
+    procures: Optional[List[str]] = None
+    related_tables: Optional[List[str]] = None
+
 class FacilityClass(BaseModel):
     name: str
     description: str
@@ -44,14 +55,25 @@ class FacilityType(BaseModel):
     default_technology: Optional[str] = None
     quantity_interpretation: Optional[Dict[str, str]] = None
     calculation_requirements: Optional[Dict[str, str]] = None
+    capacity_factor_notes: Optional[str] = None
 
 class QuantityType(BaseModel):
     name: str
-    unit: str
-    description: str
-    category: str
+    unit: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
     source: Optional[str] = None
     aliases: Optional[List[str]] = None
+    applies_to: Optional[List[str]] = None
+    formula: Optional[str] = None
+    valid_range: Optional[List[float]] = None
+    requires: Optional[List[str]] = None
+    time_period: Optional[str] = None
+    interpretation: Optional[str] = None
+    abstract: Optional[bool] = False
+    variants: Optional[Dict[str, 'QuantityType']] = None
+    definition: Optional[str] = None
+    required_for: Optional[List[str]] = None
 
 class RelationshipType(BaseModel):
     name: str
@@ -102,6 +124,9 @@ class OperationDefinition(BaseModel):
     aggregation: Optional[Dict[str, Any]] = None
     special_cases: Optional[Dict[str, Any]] = None
     validation: Optional[List[str]] = None
+    parameters: Optional[List[Dict[str, Any]]] = None
+    validation_logic: Optional[List[Dict[str, Any]]] = None
+    returns: Optional[List[Dict[str, Any]]] = None
 
 class DataQualityRule(BaseModel):
     minimum_completeness: Optional[float] = None
@@ -111,6 +136,7 @@ class DataQualityRule(BaseModel):
 class Ontology(BaseModel):
     interval_types: Dict[str, IntervalType]
     conversion_rules: List[ConversionRule]
+    markets: Dict[str, Market] = {}
     market_services: Dict[str, MarketService]
     facility_classes: Dict[str, FacilityClass] = {}
     technology_types: Dict[str, TechnologyType] = {}

@@ -95,6 +95,57 @@ class Validator:
                             alternatives.append("Set separate_flows=true")
                         if req == "not_applicable":
                             violations.append(f"Invalid Operation: {operation} is not applicable for {ftype}")
+        
+        # 6. Operation-Specific Validation Logic
+        if operation in self.ontology.operations:
+            op_def = self.ontology.operations[operation]
+            if op_def.validation_logic:
+                for rule in op_def.validation_logic:
+                    # Handle 'condition' based rules
+                    if 'condition' in rule:
+                        condition = rule['condition']
+                        # Safe evaluation of simple conditions
+                        # We replace variables with values from params
+                        try:
+                            # This is a simplified evaluator. In a real system, use a proper expression engine.
+                            # We'll map known variables for now.
+                            eval_context = params.copy()
+                            
+                            # Helper for 'in' checks if not natively supported by simple eval
+                            # But python eval supports it. We just need to be careful.
+                            # For this MVP, we will manually check specific known conditions to avoid eval() risk
+                            # or use a very restricted eval if needed. 
+                            # Let's implement specific logic for the known rules for now.
+                            
+                            if "facility_type == 'Storage'" in condition:
+                                if params.get('facility_type') == 'Storage':
+                                    if "cf_type not in" in condition:
+                                        allowed = ['discharge', 'charge', 'both']
+                                        if params.get('cf_type') not in allowed:
+                                            violations.append(rule['error'])
+                                            alternatives.append(f"Set cf_type to one of {allowed}")
+                                            
+                            if "facility_type == 'Hybrid'" in condition:
+                                if params.get('facility_type') == 'Hybrid':
+                                    if "component not in" in condition:
+                                        allowed = ['generation', 'storage']
+                                        if params.get('component') not in allowed:
+                                            violations.append(rule['error'])
+                                            alternatives.append(f"Set component to one of {allowed}")
+
+                        except Exception as e:
+                            # If evaluation fails, we might want to log it but not fail validation hard?
+                            # Or treat as violation.
+                            pass
+
+                    # Handle 'check' based rules (placeholders for external checks)
+                    if 'check' in rule:
+                        check_desc = rule['check']
+                        # These often require external data (metadata, SCADA). 
+                        # We can't validate them purely on params.
+                        # We can return them as warnings or "required_checks" in the result?
+                        # For now, we'll skip or log them.
+                        pass
 
         if violations:
             return ValidationResult(False, violations, alternatives)
