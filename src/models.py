@@ -74,6 +74,8 @@ class QuantityType(BaseModel):
     variants: Optional[Dict[str, 'QuantityType']] = None
     definition: Optional[str] = None
     required_for: Optional[List[str]] = None
+    last_modified: Optional[str] = None
+    changes: Optional[str] = None
 
 class RelationshipType(BaseModel):
     name: str

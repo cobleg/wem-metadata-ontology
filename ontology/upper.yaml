@@ -239,16 +239,22 @@ CapacityFactor:
       requires: [SCADA]
       valid_range: [0.0, 1.05]
       interpretation: "Fraction of theoretical maximum achieved"
+      last_modified: "2025-12-02"
+      changes: "Explicitly linked to SCADA."
     StorageDischargeCapacityFactor:
       name: "Storage Discharge Capacity Factor"
       formula: "ActualDischarge / (NameplateCapacity * Hours)"
       applies_to: [Storage]
       interpretation: "Storage utilization for grid injection"
+      last_modified: "2025-12-02"
+      changes: "Added to support storage analysis."
     StorageChargeCapacityFactor:
       name: "Storage Charge Capacity Factor"
-      formula: "ActualCharge / (NameplateCapacity * Hours)"
+      formula: "ActualCharge / (EnergyCapacity * TimePeriod)"
       applies_to: [Storage]
       interpretation: "Storage utilization for grid withdrawal"
+      last_modified: "2025-12-02"
+      changes: "Added to support storage analysis."
 
 AvailabilityFactor:
   name: "Availability Factor"

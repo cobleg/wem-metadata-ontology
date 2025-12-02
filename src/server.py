@@ -24,6 +24,113 @@ def get_ontology_version() -> str:
     return "Version information not available."
 
 @mcp.tool()
+def compare_versions(base_ref: str, target_ref: str = "HEAD") -> str:
+    """
+    Compares two versions of the ontology using git.
+    
+    Args:
+        base_ref: The base git reference (e.g., "v1.0.0" or commit hash).
+        target_ref: The target git reference (default: "HEAD").
+        
+    Returns:
+        JSON string describing added, modified, and removed concepts.
+    """
+    import subprocess
+    import tempfile
+    import shutil
+    import json
+    from .loader import OntologyLoader
+    
+    try:
+        # Create temp dir to checkout old version
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Helper to fetch file content
+            def fetch_file(ref, filename, dest_path):
+                try:
+                    # git show ref:path/to/file
+                    # We assume the server is running from the repo root or src
+                    # We need to find the relative path to ontology dir
+                    # ontology_dir is defined globally as os.path.join(..., 'ontology')
+                    # We can try to guess the git path.
+                    # Assuming repo structure: wem-metadata-ontology/ontology/filename
+                    git_path = f"ontology/{filename}"
+                    
+                    # Run git show
+                    result = subprocess.run(
+                        ["git", "show", f"{ref}:{git_path}"],
+                        capture_output=True,
+                        text=True,
+                        cwd=os.path.dirname(ontology_dir) # Run from repo root
+                    )
+                    
+                    if result.returncode != 0:
+                        return False
+                        
+                    with open(dest_path, 'w') as f:
+                        f.write(result.stdout)
+                    return True
+                except Exception as e:
+                    return False
+
+            # Load Base Version
+            base_dir = os.path.join(temp_dir, "base")
+            os.makedirs(base_dir)
+            files = ["upper.yaml", "lower.yaml", "catalog.yaml", "rules.yaml"]
+            
+            for f in files:
+                if not fetch_file(base_ref, f, os.path.join(base_dir, f)):
+                    return f"Error: Could not fetch {f} from {base_ref}"
+            
+            try:
+                base_loader = OntologyLoader(base_dir)
+                base_ontology = base_loader.get_ontology()
+            except Exception as e:
+                return f"Error loading base ontology from {base_ref}: {e}"
+
+            # Load Target Version (if not HEAD, fetch it; if HEAD, use current)
+            if target_ref == "HEAD":
+                target_ontology = ontology
+            else:
+                target_dir = os.path.join(temp_dir, "target")
+                os.makedirs(target_dir)
+                for f in files:
+                    if not fetch_file(target_ref, f, os.path.join(target_dir, f)):
+                        return f"Error: Could not fetch {f} from {target_ref}"
+                try:
+                    target_loader = OntologyLoader(target_dir)
+                    target_ontology = target_loader.get_ontology()
+                except Exception as e:
+                    return f"Error loading target ontology from {target_ref}: {e}"
+            
+            # Compare
+            diff = {
+                "added_concepts": [],
+                "removed_concepts": [],
+                "modified_concepts": [],
+                "breaking_changes": False
+            }
+            
+            # Compare Quantity Types
+            base_qt = base_ontology.quantity_types
+            target_qt = target_ontology.quantity_types
+            
+            for name in target_qt:
+                if name not in base_qt:
+                    diff["added_concepts"].append(name)
+                elif str(target_qt[name].dict()) != str(base_qt[name].dict()):
+                    diff["modified_concepts"].append(name)
+                    
+            for name in base_qt:
+                if name not in target_qt:
+                    diff["removed_concepts"].append(name)
+                    diff["breaking_changes"] = True
+            
+            return json.dumps(diff, indent=2)
+            
+    except Exception as e:
+        return f"Comparison failed: {str(e)}"
+
+@mcp.tool()
 def validate_operation(operation: str, parameters: dict) -> str:
     """
     Validates if an operation with given parameters is semantically valid according to the WEM Ontology.
