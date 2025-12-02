@@ -269,6 +269,8 @@ def list_concepts() -> str:
         "Markets": {},
         "Market Services": list(ontology.market_services.keys()),
         "Facility Types": list(ontology.facility_types.keys()),
+        "Facility Classes": list(ontology.facility_classes.keys()),
+        "Capability Classes": list(ontology.capability_classes.keys()),
         "Technology Types": list(ontology.technology_types.keys()),
         "Quantities": list(ontology.quantity_types.keys())
     }

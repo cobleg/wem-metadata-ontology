@@ -41,6 +41,12 @@ class FacilityClass(BaseModel):
     description: str
     wem_rule_reference: str
 
+class CapabilityClass(BaseModel):
+    name: str
+    description: str
+    wem_rule_reference: str
+    priority: int
+
 class TechnologyType(BaseModel):
     name: str
     description: str
@@ -132,6 +138,7 @@ class OperationDefinition(BaseModel):
     validation: Optional[List[str]] = None
     parameters: Optional[List[Dict[str, Any]]] = None
     validation_logic: Optional[List[Dict[str, Any]]] = None
+    logic: Optional[Dict[str, Any]] = None
     returns: Optional[List[Dict[str, Any]]] = None
 
 class DataQualityRule(BaseModel):
@@ -163,6 +170,7 @@ class Ontology(BaseModel):
     markets: Dict[str, Market] = {}
     market_services: Dict[str, MarketService]
     facility_classes: Dict[str, FacilityClass] = {}
+    capability_classes: Dict[str, CapabilityClass] = {}
     technology_types: Dict[str, TechnologyType] = {}
     facility_types: Dict[str, FacilityType]
     price_types: Dict[str, PriceType]

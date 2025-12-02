@@ -143,6 +143,27 @@ facility_classes:
     name: "Transitional Component"
     description: "A Separately Certified Component that was part of a Transitional Facility during the 2018 Reserve Capacity Cycle."
     wem_rule_reference: "Chapter 11 (Glossary)"
+  NAFF:
+    name: "Network Augmentation Funding Facility"
+    description: "A Facility that has committed to funding network augmentation. Priority 2 in NAQ allocation for the specific capacity created."
+    wem_rule_reference: "Chapter 11 (Glossary)"
+
+capability_classes:
+  Class1:
+    name: "Capability Class 1"
+    description: "Unrestricted Firm Capacity. Scheduled Facilities or DSPs available for Injection in all Trading Intervals. Priority 1 (NAQ First Priority)."
+    wem_rule_reference: "Clause 4.11.4(a)"
+    priority: 1
+  Class2:
+    name: "Capability Class 2"
+    description: "Restricted Firm Capacity. Scheduled Facilities or DSPs with energy or availability limitations (e.g., Storage). Priority 2 (NAQ Second Priority)."
+    wem_rule_reference: "Clause 4.11.4(b)"
+    priority: 2
+  Class3:
+    name: "Capability Class 3"
+    description: "Non-Firm Capacity. Semi-Scheduled or Non-Scheduled Facilities (e.g., Wind/Solar) without firming. Priority 3 (NAQ Third Priority)."
+    wem_rule_reference: "Clause 4.11.4(c)"
+    priority: 3
 
 technology_types:
   NIGS:
@@ -227,6 +248,8 @@ facility_types:
     quantity_interpretation:
       positive: "net_export"
       negative: "net_import"
+    capacity_factor_notes: |
+      Hybrid facilities can leverage storage to firm intermittent generation, potentially achieving a higher Capability Class (e.g., Class 2 instead of Class 3).
 
 energy_sources:
   Solar:
@@ -275,12 +298,28 @@ quantity_types:
   CapacityCredit:
     name: "Capacity Credit"
     unit: "MW"
-    description: "Notional unit of Reserve Capacity."
+    description: "Notional unit of Reserve Capacity. Capped by Network Access Quantity (NAQ)."
     category: "Capacity"
   ReserveCapacityRequirement:
     name: "Reserve Capacity Requirement (RCR)"
     unit: "MW"
     description: "Total capacity required in the SWIS."
+    category: "Capacity"
+  NetworkAccessQuantity:
+    name: "Network Access Quantity (NAQ)"
+    unit: "MW"
+    description: "The quantity of network capacity available to a Facility for export during peak periods. Caps Capacity Credits."
+    category: "Capacity"
+    wem_rule_reference: "Clause 4.15"
+  HighestNetworkAccessQuantity:
+    name: "Highest Network Access Quantity"
+    unit: "MW"
+    description: "Historical high water mark for access rights. Allows reclamation of access after temporary reductions."
+    category: "Capacity"
+  IndicativeNAQ:
+    name: "Indicative NAQ"
+    unit: "MW"
+    description: "Early signal of network access for Early Certified Reserve Capacity projects."
     category: "Capacity"
   PeakIRCR:
     name: "Peak Individual Reserve Capacity Requirement"
@@ -301,6 +340,12 @@ quantity_types:
       Costs allocated via Flexible Shared Reserve Capacity Cost (Clause 4.28.4A).
       Indicative Flexible IRCR provided 10 days prior (Clause 4.1.23D).
     requires: [FourHourDemandIncrease]
+  AvailabilityDurationRequirement:
+    name: "Availability Duration Requirement"
+    unit: "hours"
+    description: "Target duration used to prorate CRC for Class 2 facilities."
+    category: "Capacity"
+    wem_rule_reference: "Clause 4.11.4"
 
   # Energy/Dispatch
   Injection:

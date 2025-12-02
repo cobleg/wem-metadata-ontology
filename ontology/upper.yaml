@@ -1,9 +1,9 @@
 # Upper Ontology: Domain-Independent Concepts
 
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   last_updated: "2025-12-02"
-  description: "WEM Metadata Ontology including Markets, Physical Capacity, and Performance Metrics."
+  description: "WEM Metadata Ontology including Markets, Physical Capacity, Performance Metrics, WEM Rules, and RCM."
 
 temporal:
   interval_types:
@@ -106,6 +106,28 @@ operations:
         type: float
       - name: warnings
         type: list
+
+  determine_network_access_quantity:
+    description: "Calculates the maximum Capacity Credits a facility can hold based on network constraints."
+    required_inputs:
+      - CertifiedReserveCapacity
+      - RCM_Limit_Advice
+      - Dispatch_Scenarios
+    parameters:
+      - name: facility_code
+        required: true
+      - name: capacity_year
+        required: true
+    logic:
+      coverage: "Must cover >= 95% of peak dispatch scenarios"
+      prioritisation:
+        1: "Existing/Committed Facilities"
+        2: "Network Augmentation Funding Facilities (NAFF)"
+        3: "New Entrants (Class 1 > Class 2 > Class 3)"
+    returns:
+      - name: network_access_quantity
+        type: float
+        unit: "MW"
 
 data_quality_rules:
   dispatch_weighted_price:

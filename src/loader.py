@@ -35,6 +35,7 @@ class OntologyLoader:
             'markets': lower.get('markets', {}),
             'market_services': lower['market_services'],
             'facility_classes': lower.get('facility_classes', {}),
+            'capability_classes': lower.get('capability_classes', {}),
             'technology_types': lower.get('technology_types', {}),
             'facility_types': lower['facility_types'],
             'price_types': lower['price_types'],
