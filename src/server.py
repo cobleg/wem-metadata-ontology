@@ -105,17 +105,25 @@ def get_concept_definition(concept_name: str) -> str:
 @mcp.tool()
 def list_concepts() -> str:
     """
-    Returns a categorized list of all available concepts in the ontology.
-    Use this to discover valid concept names for get_concept_definition.
+    Returns a hierarchical view of the ontology concepts.
     """
-    return f"""
-    Markets: {list(ontology.markets.keys())}
-    Market Services: {list(ontology.market_services.keys())}
-    Facility Classes: {list(ontology.facility_classes.keys())}
-    Facility Types: {list(ontology.facility_types.keys())}
-    Technology Types: {list(ontology.technology_types.keys())}
-    Quantities: {list(ontology.quantity_types.keys())}
-    """
+    import json
+    
+    structure = {
+        "Markets": {},
+        "Market Services": list(ontology.market_services.keys()),
+        "Facility Types": list(ontology.facility_types.keys()),
+        "Technology Types": list(ontology.technology_types.keys()),
+        "Quantities": list(ontology.quantity_types.keys())
+    }
+    
+    for market_name, market in ontology.markets.items():
+        structure["Markets"][market_name] = {
+            "name": market.name,
+            "procures": market.procures
+        }
+        
+    return json.dumps(structure, indent=2)
 
 @mcp.tool()
 def get_guidelines() -> str:

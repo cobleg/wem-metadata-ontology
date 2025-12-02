@@ -9,9 +9,15 @@ from src.server import get_concept_definition, list_concepts
 
 class TestServerMarkets(unittest.TestCase):
     def test_list_concepts(self):
-        """Verify markets are listed."""
-        concepts = list_concepts()
-        self.assertIn("Markets: ['STEM', 'RTM', 'RCM', 'ESS']", concepts)
+        """Verify markets are listed in hierarchy."""
+        import json
+        concepts_json = list_concepts()
+        concepts = json.loads(concepts_json)
+        
+        self.assertIn("Markets", concepts)
+        self.assertIn("RTM", concepts["Markets"])
+        self.assertIn("procures", concepts["Markets"]["RTM"])
+        self.assertIn("Energy", concepts["Markets"]["RTM"]["procures"])
 
     def test_get_market_definition(self):
         """Verify market definition retrieval."""
