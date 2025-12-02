@@ -1,5 +1,10 @@
 # Upper Ontology: Domain-Independent Concepts
 
+metadata:
+  version: "1.1.0"
+  last_updated: "2025-12-02"
+  description: "WEM Metadata Ontology including Markets, Physical Capacity, and Performance Metrics."
+
 temporal:
   interval_types:
     DispatchInterval:

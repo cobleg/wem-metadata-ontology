@@ -14,6 +14,16 @@ catalog = DataCatalog(ontology)
 mcp = FastMCP("wem-metadata-ontology")
 
 @mcp.tool()
+def get_ontology_version() -> str:
+    """
+    Returns the current version of the WEM Ontology.
+    Useful for audit trails and ensuring compatibility.
+    """
+    if ontology.metadata:
+        return str(ontology.metadata.dict())
+    return "Version information not available."
+
+@mcp.tool()
 def validate_operation(operation: str, parameters: dict) -> str:
     """
     Validates if an operation with given parameters is semantically valid according to the WEM Ontology.

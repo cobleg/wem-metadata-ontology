@@ -133,7 +133,13 @@ class DataQualityRule(BaseModel):
     handling_missing_data: Optional[str] = None
     flags_to_check: Optional[List[str]] = None
 
+class OntologyMetadata(BaseModel):
+    version: str
+    last_updated: str
+    description: Optional[str] = None
+
 class Ontology(BaseModel):
+    metadata: Optional[OntologyMetadata] = None
     interval_types: Dict[str, IntervalType]
     conversion_rules: List[ConversionRule]
     markets: Dict[str, Market] = {}

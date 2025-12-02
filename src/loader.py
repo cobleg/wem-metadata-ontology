@@ -19,6 +19,7 @@ class OntologyLoader:
 
         # Merge dictionaries
         data = {
+            'metadata': upper.get('metadata'),
             'interval_types': upper['temporal']['interval_types'],
             'conversion_rules': upper['temporal']['conversion_rules'],
             'relationships': upper.get('relationships', {}),
