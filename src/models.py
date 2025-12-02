@@ -17,7 +17,7 @@ class ConversionRule(BaseModel):
     validation: Optional[str] = None
 
 class MarketService(BaseModel):
-    dispatch_interval: str
+    dispatch_interval: Optional[str] = None
     pricing_interval: str
     settlement_interval: Optional[str] = None
     category: Optional[str] = None
@@ -45,6 +45,8 @@ class TechnologyType(BaseModel):
     name: str
     description: str
     wem_rule_reference: str
+    rcm_eligibility: Optional[List[str]] = None
+    rcm_liability: Optional[List[str]] = None
 
 class FacilityType(BaseModel):
     flows: List[str]
@@ -56,6 +58,8 @@ class FacilityType(BaseModel):
     quantity_interpretation: Optional[Dict[str, str]] = None
     calculation_requirements: Optional[Dict[str, str]] = None
     capacity_factor_notes: Optional[str] = None
+    rcm_eligibility: Optional[List[str]] = None
+    rcm_liability: Optional[List[str]] = None
 
 class QuantityType(BaseModel):
     name: str

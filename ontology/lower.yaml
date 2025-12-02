@@ -103,7 +103,20 @@ market_services:
       within_category: allowed
       with_energy: forbidden
 
-    wem_rule_reference: "Clause 3.9.7"
+  # Reserve Capacity
+  PeakReserveCapacity:
+    dispatch_interval: null
+    pricing_interval: CapacityYear
+    category: "ReserveCapacity"
+    wem_rule_reference: "Clause 4.1"
+    compatible_with: [FlexibleReserveCapacity]
+  
+  FlexibleReserveCapacity:
+    dispatch_interval: null
+    pricing_interval: CapacityYear
+    category: "ReserveCapacity"
+    wem_rule_reference: "Clause 4.1"
+    compatible_with: [PeakReserveCapacity]
 
 facility_classes:
   Scheduled:
@@ -128,18 +141,25 @@ technology_types:
     name: "Non-Intermittent Generating System"
     description: "Conventional generation (e.g., gas, coal)."
     wem_rule_reference: "Clause 2.29.1(c)"
+    rcm_eligibility: [PeakReserveCapacity, FlexibleReserveCapacity]
   IGS:
     name: "Intermittent Generating System"
     description: "Variable generation (e.g., wind, solar)."
     wem_rule_reference: "Clause 2.29.1(d)"
+    rcm_eligibility: [PeakReserveCapacity]
+    # Removed FlexibleIRCR liability as per user correction
+    rcm_liability: []
   ESR:
     name: "Electric Storage Resource"
     description: "System capable of storing and discharging energy."
     wem_rule_reference: "Clause 2.29.1(d1)"
+    rcm_eligibility: [PeakReserveCapacity, FlexibleReserveCapacity]
+    rcm_liability: [FlexibleIRCR]
   Load:
     name: "Load"
     description: "Electricity consuming resources."
     wem_rule_reference: "Clause 2.29.1(d2)"
+    rcm_liability: [PeakIRCR, FlexibleIRCR]
 
 facility_types:
   Storage:
@@ -254,6 +274,25 @@ quantity_types:
     unit: "MW"
     description: "Total capacity required in the SWIS."
     category: "Capacity"
+  PeakIRCR:
+    name: "Peak Individual Reserve Capacity Requirement"
+    unit: "MW"
+    description: "Liability for Peak Reserve Capacity costs."
+    category: "Capacity"
+    applies_to: [Load]
+  FlexibleIRCR:
+    name: "Flexible Individual Reserve Capacity Requirement"
+    unit: "MW"
+    description: "Liability for Flexible Reserve Capacity costs."
+    category: "Capacity"
+    applies_to: [Load, ESR]
+    definition: |
+      Calculated based on load contribution during 'Flexible IRCR Intervals' (periods of steep operational ramp).
+      Methodology defined in Appendix 4.
+      AEMO determines Flexible IRCR for each Trading Day (Clause 4.28.7A).
+      Costs allocated via Flexible Shared Reserve Capacity Cost (Clause 4.28.4A).
+      Indicative Flexible IRCR provided 10 days prior (Clause 4.1.23D).
+    requires: [FourHourDemandIncrease]
 
   # Energy/Dispatch
   Injection:
