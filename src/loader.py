@@ -17,9 +17,18 @@ class OntologyLoader:
         catalog = self._load_yaml('catalog.yaml')
         rules = self._load_yaml('rules.yaml')
 
+        # Load WEM Rules
+        # We assume the WEM_Rules repo is at f:/WEM_Rules based on the user's context
+        # Ideally this would be configurable, but for this integration we hardcode the known path.
+        rules_path = "f:/WEM_Rules/output/market_rules.rules.json"
+        from .rules_loader import WEMRulesLoader
+        rules_loader = WEMRulesLoader(rules_path)
+        wem_rules = rules_loader.load_rules()
+
         # Merge dictionaries
         data = {
             'metadata': upper.get('metadata'),
+            'wem_rules': wem_rules,
             'interval_types': upper['temporal']['interval_types'],
             'conversion_rules': upper['temporal']['conversion_rules'],
             'relationships': upper.get('relationships', {}),

@@ -140,8 +140,20 @@ class OntologyMetadata(BaseModel):
     last_updated: str
     description: Optional[str] = None
 
+class WEMRule(BaseModel):
+    id: str
+    title: str
+    content: str
+    section: str
+    conditions: List[str] = []
+    actions: List[str] = []
+    entities: List[str] = []
+    effective_date: Optional[str] = None
+    types: List[str] = []
+
 class Ontology(BaseModel):
     metadata: Optional[OntologyMetadata] = None
+    wem_rules: Dict[str, WEMRule] = {}
     interval_types: Dict[str, IntervalType]
     conversion_rules: List[ConversionRule]
     markets: Dict[str, Market] = {}

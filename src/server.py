@@ -2,7 +2,9 @@ from mcp.server.fastmcp import FastMCP
 from .loader import OntologyLoader
 from .validator import Validator
 from .catalog import DataCatalog
+from .catalog import DataCatalog
 import os
+from typing import List
 
 # Initialize components
 ontology_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ontology')
@@ -162,60 +164,97 @@ def get_table_mapping(concept: str) -> str:
         return f"Table: {table}\nColumns: {columns}"
     return "No table mapping found."
 
+
+
+@mcp.tool()
+def search_wem_rules(query: str) -> str:
+    """
+    Search WEM Rules by title or content.
+    Returns a list of matching rules.
+    """
+    import json
+    matches = []
+    query_lower = query.lower()
+    
+    for rule_id, rule in ontology.wem_rules.items():
+        if query_lower in rule.title.lower() or query_lower in rule.content.lower():
+            matches.append(rule.dict())
+            
+    return json.dumps(matches, indent=2)
+
+def _get_related_rules(concept_name: str) -> List[dict]:
+    """Helper to find rules related to a concept."""
+    related = []
+    concept_lower = concept_name.lower()
+    
+    for rule_id, rule in ontology.wem_rules.items():
+        # Check entities
+        if any(concept_lower in entity.lower() for entity in rule.entities):
+            related.append(rule.dict())
+            continue
+            
+        # Check content
+        if concept_lower in rule.content.lower():
+            related.append(rule.dict())
+            
+    return related
+
 @mcp.tool()
 def get_concept_definition(concept_name: str) -> str:
     """
     Returns the full definition of a concept, including WEM Rules, Wikidata links, and properties.
     Search order: Market Services, Facility Types, Facility Classes, Technology Types, Quantities.
     """
+    import json
+    
     # Helper to search by alias
     def find_by_alias(dictionaries):
         for d in dictionaries:
             for name, item in d.items():
                 if hasattr(item, 'aliases') and item.aliases and concept_name in item.aliases:
-                    return str(item.dict())
+                    return item
         return None
 
+    item = None
+    
     # 1. Direct Lookup
-    # Check Market Services
     if concept_name in ontology.market_services:
-        return str(ontology.market_services[concept_name].dict())
+        item = ontology.market_services[concept_name]
+    elif concept_name in ontology.markets:
+        item = ontology.markets[concept_name]
+    elif concept_name in ontology.facility_types:
+        item = ontology.facility_types[concept_name]
+    elif concept_name in ontology.facility_classes:
+        item = ontology.facility_classes[concept_name]
+    elif concept_name in ontology.technology_types:
+        item = ontology.technology_types[concept_name]
+    elif concept_name in ontology.quantity_types:
+        item = ontology.quantity_types[concept_name]
     
-    # Check Markets
-    if concept_name in ontology.markets:
-        return str(ontology.markets[concept_name].dict())
-    
-    # Check Facility Types
-    if concept_name in ontology.facility_types:
-        return str(ontology.facility_types[concept_name].dict())
-
-    # Check Facility Classes
-    if concept_name in ontology.facility_classes:
-        return str(ontology.facility_classes[concept_name].dict())
-
-    # Check Technology Types
-    if concept_name in ontology.technology_types:
-        return str(ontology.technology_types[concept_name].dict())
-
-    # Check Quantity Types
-    if concept_name in ontology.quantity_types:
-        return str(ontology.quantity_types[concept_name].dict())
-
     # 2. Table Name Lookup
-    if concept_name in ontology.tables:
+    elif concept_name in ontology.tables:
         mapped_concept = ontology.tables[concept_name].concept
         return get_concept_definition(mapped_concept)
 
     # 3. Alias Lookup
-    alias_result = find_by_alias([
-        ontology.market_services,
-        ontology.facility_types,
-        ontology.facility_classes,
-        ontology.technology_types,
-        ontology.quantity_types
-    ])
-    if alias_result:
-        return alias_result
+    if not item:
+        item = find_by_alias([
+            ontology.market_services,
+            ontology.facility_types,
+            ontology.facility_classes,
+            ontology.technology_types,
+            ontology.quantity_types
+        ])
+
+    if item:
+        # Enrich with related rules
+        definition = item.dict()
+        related_rules = _get_related_rules(concept_name)
+        if related_rules:
+            definition['related_wem_rules'] = [r['id'] for r in related_rules]
+            definition['related_wem_rules_details'] = related_rules[:3] # Limit details to top 3
+            
+        return json.dumps(definition, indent=2)
 
     return f"Concept '{concept_name}' not found in ontology (checked names, tables, and aliases)."
 
@@ -262,6 +301,8 @@ def get_guidelines() -> str:
         - `get_operation_definition(name)`: Get standard calculation patterns.
         - `validate_operation(op, params)`: Pre-validate your logic.
     """
+@mcp.tool()
+def get_operation_definition(operation_name: str) -> str:
     """
     Returns the definition of a standard operation, including required inputs and validation rules.
     """
