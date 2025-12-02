@@ -135,6 +135,14 @@ facility_classes:
     name: "Demand Side Programme"
     description: "Aggregated loads that can be curtailed."
     wem_rule_reference: "Clause 2.29.1A(f)"
+  TransitionalFacility:
+    name: "Transitional Facility"
+    description: "A Facility assigned Capacity Credits for the 2018 Reserve Capacity Cycle. Subject to price caps ($114k-$140k) during Transitional Reserve Capacity Cycles (2019-2028)."
+    wem_rule_reference: "Chapter 11 (Glossary)"
+  TransitionalComponent:
+    name: "Transitional Component"
+    description: "A Separately Certified Component that was part of a Transitional Facility during the 2018 Reserve Capacity Cycle."
+    wem_rule_reference: "Chapter 11 (Glossary)"
 
 technology_types:
   NIGS:
@@ -345,6 +353,11 @@ price_types:
     granularity: DispatchInterval
     scope: market_service
     derived_from: [DispatchPrice, DispatchQuantity]
+  FacilityMonthlyPeakReserveCapacityPrice:
+    granularity: CapacityMonth
+    scope: facility
+    description: "Monthly price for a Transitional Facility during a Transitional Reserve Capacity Cycle."
+    wem_rule_reference: "Clause 4.29.1"
 
 domain_instances:
   - name: "Western Australia (WA)"
