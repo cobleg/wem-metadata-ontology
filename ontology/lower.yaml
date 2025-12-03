@@ -183,7 +183,7 @@ technology_types:
     description: "System capable of storing and discharging energy."
     wem_rule_reference: "Clause 2.29.1(d1)"
     rcm_eligibility: [PeakReserveCapacity, FlexibleReserveCapacity]
-    rcm_liability: [FlexibleIRCR]
+    rcm_liability: [FlexibleIRCR, RCOQ, ESRChargeShortfall]
   Load:
     name: "Load"
     description: "Electricity consuming resources."
@@ -346,6 +346,44 @@ quantity_types:
     description: "Target duration used to prorate CRC for Class 2 facilities."
     category: "Capacity"
     wem_rule_reference: "Clause 4.11.4"
+  
+  # RCM - Storage Obligations
+  RCOQ:
+    name: "Reserve Capacity Obligation Quantity"
+    unit: "MW"
+    description: "The quantity of capacity a facility is required to provide. For ESRs, this is non-zero only during ESROIs."
+    category: "Capacity"
+    applies_to: [ESR, Generator]
+  ESROI:
+    name: "Electric Storage Resource Obligation Interval"
+    unit: "Interval"
+    description: "A Trading Interval where a non-zero RCOQ applies to an ESR."
+    category: "Capacity"
+  MidPeakESROI:
+    name: "Mid Peak ESROI"
+    unit: "Time"
+    description: "Reference Trading Interval used to anchor the obligation period (Peak ESROD). Varies by season/day type."
+    category: "Capacity"
+  PeakESROD:
+    name: "Peak Electric Storage Resource Obligation Duration"
+    unit: "Intervals"
+    description: "Set of contiguous Trading Intervals (Peak ESROIs) applying each Trading Day, centered on Mid Peak ESROI."
+    category: "Capacity"
+  ESRDurationRequirement:
+    name: "ESR Duration Requirement"
+    unit: "Intervals"
+    description: "Number of Trading Intervals in Peak ESROD (e.g., 8 intervals = 4 hours)."
+    category: "Capacity"
+  AvailabilityDurationGap:
+    name: "Availability Duration Gap (ADG)"
+    unit: "hours"
+    description: "Forecast metric identifying duration gap between evening ramp and sunrise."
+    category: "Capacity"
+  ESRChargeShortfall:
+    name: "ESR Charge Shortfall"
+    unit: "MWh"
+    description: "Shortfall in charge level required to meet obligations during ESROIs. Subject to refunds."
+    category: "Capacity"
 
   # Energy/Dispatch
   Injection:
